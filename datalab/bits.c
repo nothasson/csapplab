@@ -1,7 +1,7 @@
 /* 
  * CS:APP Data Lab 
  * 
- * <Please put your name and userid here>
+ * <hasson from SYSU >
  * 
  * bits.c - Source file with your solutions to the Lab.
  *          This is the file you will hand in to your instructor.
@@ -143,7 +143,11 @@ NOTES:
  *   Rating: 1
  */
 int bitXor(int x, int y) {
-  return 2;
+  int a  = ~x&y;
+  int b  = ~y&x;
+  return  ~(~a & ~b);
+  // return 1;
+  // return 2;
 }
 /* 
  * tmin - return minimum two's complement integer 
@@ -152,9 +156,8 @@ int bitXor(int x, int y) {
  *   Rating: 1
  */
 int tmin(void) {
-
-  return 2;
-
+  int a = 1<<31;
+  return a;
 }
 //2
 /*
@@ -165,7 +168,12 @@ int tmin(void) {
  *   Rating: 1
  */
 int isTmax(int x) {
-  return 2;
+  int i = x+1;//Tmin,1000...
+  x=x+i;//-1,1111...
+  x=~x;//0,0000...
+  i=!i;//11111111111....
+  x=x+i;//
+  return !x;
 }
 /* 
  * allOddBits - return 1 if all odd-numbered bits in word set to 1
@@ -176,7 +184,10 @@ int isTmax(int x) {
  *   Rating: 2
  */
 int allOddBits(int x) {
-  return 2;
+  int mask = 0xAA+(0xAA<<8);
+  mask=mask+(mask<<16);
+  // why can't use 0xAAAAAAAA???
+  return !((mask&x)^mask);
 }
 /* 
  * negate - return -x 
@@ -186,7 +197,7 @@ int allOddBits(int x) {
  *   Rating: 2
  */
 int negate(int x) {
-  return 2;
+  return (~x)+1;
 }
 //3
 /* 
@@ -199,7 +210,9 @@ int negate(int x) {
  *   Rating: 3
  */
 int isAsciiDigit(int x) {
-  return 2;
+  int a = !((x + ~0x30 + 1)>>31);   //减去0x30，判断符号是否为正 （1为负数）
+  int b = !((0x39 + ~x + 1)>>31);   //0x39,判断符号是否为正
+  return a&b;
 }
 /* 
  * conditional - same as x ? y : z 
