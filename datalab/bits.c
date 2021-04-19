@@ -222,7 +222,9 @@ int isAsciiDigit(int x) {
  *   Rating: 3
  */
 int conditional(int x, int y, int z) {
-  return 2;
+  x = !!x;   //得到布尔值
+  x = ~x +1; // 补码
+  return (x&y) | (~x & z);
 }
 /* 
  * isLessOrEqual - if x <= y  then return 1, else return 0 
@@ -232,7 +234,13 @@ int conditional(int x, int y, int z) {
  *   Rating: 3
  */
 int isLessOrEqual(int x, int y) {
-  return 2;
+    //符号相同，直接相减
+    int minus = (y + (~x + 1)) >> 31;   //如果符号相同，判断是否y大于等于x,0x0000为大于或等于,0xffff为小于
+    //符号不同的情况呢
+    int xS = x >> 31;
+    int yS = y >> 31;
+    int s = ((xS ^ yS) >> 31); // 符号,不同为1
+    return (!s & (!minus)) | (s & !yS);    //符号相同的情况返回minus的布尔值，否则返回yS是不是正数
 }
 //4
 /* 
@@ -244,7 +252,10 @@ int isLessOrEqual(int x, int y) {
  *   Rating: 4 
  */
 int logicalNeg(int x) {
-  return 2;
+  //非0的数中间肯定有至少一位是1
+  //逻辑非就是非0为1，非非0为0。利用其补码（取反加一）的性质，除了0和最小数（符号位为1，其余为0），外其他数都是互为相反数关系（符号位取位或为1）。
+  //0和最小数的补码是本身，不过0的符号位与其补码符号位位或为0，最小数的为1。利用这一点得到解决方法。
+  return ((x|(~x+1))>>31)+1;
 }
 /* howManyBits - return the minimum number of bits required to represent x in
  *             two's complement
