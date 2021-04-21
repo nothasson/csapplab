@@ -270,7 +270,22 @@ int logicalNeg(int x) {
  *  Rating: 4
  */
 int howManyBits(int x) {
-  return 0;
+  int b16,b8,b4,b2,b1,b0;
+  int sign = x>>31;
+  x = (sign & ~x) | (~sign & x);
+  //如果x为正则不变，否则按位取反（这样好找最高位为1的，原来是最高位为0的，这样也将符号位去掉了）
+  b16 = !!(x >> 16)<<4;  //高16位是否有1
+  x = x >> b16; //如果有（至少需要16位），则将原数右移16位
+  b8 = !!(x >> 8)<<3;
+  x = x >> b8;
+  b4 = !!(x >> 4)<<2;
+  x = x >> b4;
+  b2 = !!(x>>2)<<1;
+  x = x >> b2;
+  b1 = !!(x);
+  x = x >> b1;
+  b0 = x;
+  return  b16+b8+b4+b2+b1+b0+1;//+1表示加上符号位
 }
 //float
 /* 
@@ -285,7 +300,14 @@ int howManyBits(int x) {
  *   Rating: 4
  */
 unsigned floatScale2(unsigned uf) {
-  return 2;
+  //输出浮点数uf*2
+  int exp = (uf&0x7f800000)>>23;  //尾数23位，7f80表示exp全为1的情况，
+  int sign = uf&(1<<31);  //uf的第一位为1，则sign为1<<31,否则为0
+  if(exp == 0) return uf<<1 | sign;
+  if(exp == 255) return uf;
+  exp++;
+  if(exp ==255) return 0x7f800000 | sign;
+  return (exp << 23) | (uf & 0x807fffff);
 }
 /* 
  * floatFloat2Int - Return bit-level equivalent of expression (int) f
@@ -300,8 +322,28 @@ unsigned floatScale2(unsigned uf) {
  *   Rating: 4
  */
 int floatFloat2Int(unsigned uf) {
-  return 2;
+  //真不会 抄别人的 尴尬
+  int a = ((uf >> 23) & 0xff) - 127;  // 指数位
+  int flag = uf >> 31;     //符号位
+  if (a >= 32)
+      return 0x80000000;    //爆了
+  else if (a < 0)
+      return 0;      //分数
+  else {
+      int temp = (uf | 0x800000) & 0xffffff;
+      if (a >= 23) {
+          int e = a - 23;
+          temp = temp << e;
+      } else {
+          int e = 23 - a;
+          temp = temp >> e;
+      }
+      return flag ? -temp : temp;
+  }
 }
+
+
+
 /* 
  * floatPower2 - Return bit-level equivalent of the expression 2.0^x
  *   (2.0 raised to the power x) for any 32-bit integer x.
@@ -316,5 +358,9 @@ int floatFloat2Int(unsigned uf) {
  *   Rating: 4
  */
 unsigned floatPower2(int x) {
-    return 2;
+    //求2的x次幂
+    int exp = 127 + x;
+    if(exp >= 255) return 0x7f800000;
+    if(exp <0 ) return 0;
+    return exp<<23;
 }
