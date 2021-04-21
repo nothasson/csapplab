@@ -6,7 +6,11 @@ something useful
 
 
 - 4.21 started the bomb lab
+
+
+
 ### phase 1
+
 由源代码可以看出六个阶段的函数位phase_x(),首先进入phase_1()
 
 输入 ```disas phase_1()```
@@ -18,4 +22,14 @@ something useful
 所以输入 ``` x/s 0x402400```可以得到地址0x402400所对应的内容。```"Border relations with Canada have never been better."```
 
 ### phase 2
+
+### 小计
+
+![image-20210421230209743](https://gitee.com/20162180090/piccgo/raw/master/image-20210421230209743.png)
+
+![image-20210421230236364](https://gitee.com/20162180090/piccgo/raw/master/image-20210421230236364.png)
+
+![image-20210421230257117](https://gitee.com/20162180090/piccgo/raw/master/image-20210421230257117.png)
+
+
 
