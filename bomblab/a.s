@@ -344,7 +344,7 @@ Disassembly of section .text:
   400edf:	90                   	nop
 
 0000000000400ee0 <phase_1>:
-  400ee0:	48 83 ec 08          	sub    $0x8,%rsp
+  400ee0:	48 83 ec 08          	sub    $0x8,%rsp  
   400ee4:	be 00 24 40 00       	mov    $0x402400,%esi
   400ee9:	e8 4a 04 00 00       	callq  401338 <strings_not_equal>
   400eee:	85 c0                	test   %eax,%eax
@@ -685,10 +685,10 @@ Disassembly of section .text:
   401311:	bf 08 00 00 00       	mov    $0x8,%edi
   401316:	e8 05 f9 ff ff       	callq  400c20 <exit@plt>
 
-000000000040131b <string_length>:
+000000000040131b <string_length>:  计算字节长度
   40131b:	80 3f 00             	cmpb   $0x0,(%rdi)
-  40131e:	74 12                	je     401332 <string_length+0x17>
-  401320:	48 89 fa             	mov    %rdi,%rdx
+  40131e:	74 12                	je     401332 <string_length+0x17>    长度为0则返回
+  401320:	48 89 fa             	mov    %rdi,%rdx    
   401323:	48 83 c2 01          	add    $0x1,%rdx
   401327:	89 d0                	mov    %edx,%eax
   401329:	29 f8                	sub    %edi,%eax
@@ -711,7 +711,7 @@ Disassembly of section .text:
   401352:	ba 01 00 00 00       	mov    $0x1,%edx
   401357:	41 39 c4             	cmp    %eax,%r12d
   40135a:	75 3f                	jne    40139b <strings_not_equal+0x63>
-  40135c:	0f b6 03             	movzbl (%rbx),%eax
+  40135c:	0f b6 03             	movzbl (%rbx),%eax   位扩展的move
   40135f:	84 c0                	test   %al,%al
   401361:	74 25                	je     401388 <strings_not_equal+0x50>
   401363:	3a 45 00             	cmp    0x0(%rbp),%al
