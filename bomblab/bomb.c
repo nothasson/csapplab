@@ -22,8 +22,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "support.h"
-#include "phases.h"
+// #include "support.h"
+// #include "phases.h"
 
 /* 
  * Note to self: Remember to erase this file so my victims will have no
