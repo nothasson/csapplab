@@ -711,7 +711,7 @@ Disassembly of section .text:
   401352:	ba 01 00 00 00       	mov    $0x1,%edx
   401357:	41 39 c4             	cmp    %eax,%r12d
   40135a:	75 3f                	jne    40139b <strings_not_equal+0x63>
-  40135c:	0f b6 03             	movzbl (%rbx),%eax   位扩展的move
+  40135c:	0f b6 03             	movzbl (%rbx),%eax  
   40135f:	84 c0                	test   %al,%al
   401361:	74 25                	je     401388 <strings_not_equal+0x50>
   401363:	3a 45 00             	cmp    0x0(%rbp),%al
