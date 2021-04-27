@@ -289,13 +289,14 @@ int main() {
     int a;
     int b = 0;
     int c = 14;
-    for (a = 1; a <= 14; ++a) {
+    for (a = 0; a <= 14; ++a) {
         int res = func4(a, b, c);
         if (res == 0) {
             cout << a << " " << b << " " << c << endl;
         }
     }
 }
+//0 0 14
 //1 0 14
 //3 0 14
 //7 0 14
@@ -304,10 +305,70 @@ int main() {
 所以答案为 
 
 ```
+0 0
 1 0
 3 0
 7 0
 ```
+
+### phase_5
+
+```assembly
+(gdb) disas phase_5
+Dump of assembler code for function phase_5:
+   0x0000000000401062 <+0>:     push   %rbx
+   0x0000000000401063 <+1>:     sub    $0x20,%rsp
+   0x0000000000401067 <+5>:     mov    %rdi,%rbx # rbx = x
+   0x000000000040106a <+8>:     mov    %fs:0x28,%rax
+   0x0000000000401073 <+17>:    mov    %rax,0x18(%rsp)
+   0x0000000000401078 <+22>:    xor    %eax,%eax  #eax = 0
+   0x000000000040107a <+24>:    callq  0x40131b <string_length>
+   0x000000000040107f <+29>:    cmp    $0x6,%eax  
+   0x0000000000401082 <+32>:    je     0x4010d2 <phase_5+112>
+   0x0000000000401084 <+34>:    callq  0x40143a <explode_bomb>
+   0x0000000000401089 <+39>:    jmp    0x4010d2 <phase_5+112>
+   ##长度得为6,不然就爆炸，为0的话跳到112，把eax设置为0
+
+   
+   0x000000000040108b <+41>:    movzbl (%rbx,%rax,1),%ecx  # 取下标为rax的字符
+   0x000000000040108f <+45>:    mov    %cl,(%rsp)          # ecx的最后一个字节
+   0x0000000000401092 <+48>:    mov    (%rsp),%rdx         # 就是把对应的字符放到rdx
+   0x0000000000401096 <+52>:    and    $0xf,%edx           # 字符的低四位与上0xf
+   0x0000000000401099 <+55>:    movzbl 0x4024b0(%rdx),%edx # 
+   # (gdb) x 0x4024b0
+   # 0x4024b0 <array.3449>:  "maduiersnfotvbylSo you think you can stop the bomb with ctrl-c, do you?"
+   # 比较的字符串是从里面获取的，下标是输入的字符串的每个字符的后四位
+   
+   0x00000000004010a0 <+62>:    mov    %dl,0x10(%rsp,%rax,1) #rsp结果数组
+   0x00000000004010a4 <+66>:    add    $0x1,%rax  
+   0x00000000004010a8 <+70>:    cmp    $0x6,%rax  #rax是不是第六个了
+   0x00000000004010ac <+74>:    jne    0x40108b <phase_5+41> #不是的话继续走
+   0x00000000004010ae <+76>:    movb   $0x0,0x16(%rsp)   ## 
+   0x00000000004010b3 <+81>:    mov    $0x40245e,%esi
+   # (gdb) x 0x40245e
+   # 0x40245e:       "flyers"  (不是答案)
+   # 对应上面的话，下标分别是 9 15 14 5 6 7
+   # 转为二进制为  1001 1111 1110 0101 0110 0111
+   # 对应的字符有很多，看看哪些字符对应的ascii码的后四位和上面一样就好了
+   # 例如 )/.%&'  可以参照 http://ascii.911cha.com/
+   0x00000000004010b8 <+86>:    lea    0x10(%rsp),%rdi
+   0x00000000004010bd <+91>:    callq  0x401338 <strings_not_equal>
+   0x00000000004010c2 <+96>:    test   %eax,%eax
+   0x00000000004010c4 <+98>:    je     0x4010d9 <phase_5+119>
+   0x00000000004010c6 <+100>:   callq  0x40143a <explode_bomb>
+   0x00000000004010cb <+105>:   nopl   0x0(%rax,%rax,1)
+   0x00000000004010d0 <+110>:   jmp    0x4010d9 <phase_5+119>
+   0x00000000004010d2 <+112>:   mov    $0x0,%eax # eax = 0
+   0x00000000004010d7 <+117>:   jmp    0x40108b <phase_5+41>
+   0x00000000004010d9 <+119>:   mov    0x18(%rsp),%rax
+   0x00000000004010de <+124>:   xor    %fs:0x28,%rax
+   0x00000000004010e7 <+133>:   je     0x4010ee <phase_5+140>
+   0x00000000004010e9 <+135>:   callq  0x400b30 <__stack_chk_fail@plt> ## 应该是防止缓存区攻击的，检察canny是否正确
+   0x00000000004010ee <+140>:   add    $0x20,%rsp
+   0x00000000004010f2 <+144>:   pop    %rbx
+```
+
+### phase_6
 
 
 
