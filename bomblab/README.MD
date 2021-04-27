@@ -202,6 +202,113 @@ Dump of assembler code for function phase_3:
 7 327
 ```
 
+### phase_4
+
+照例打印出汇编代码
+
+```assembly
+(gdb) disas phase_4
+Dump of assembler code for function phase_4:
+   0x000000000040100c <+0>:     sub    $0x18,%rsp
+   0x0000000000401010 <+4>:     lea    0xc(%rsp),%rcx
+   0x0000000000401015 <+9>:     lea    0x8(%rsp),%rdx
+   0x000000000040101a <+14>:    mov    $0x4025cf,%esi #  "%d %d"
+   0x000000000040101f <+19>:    mov    $0x0,%eax
+   0x0000000000401024 <+24>:    callq  0x400bf0 <__isoc99_sscanf@plt>
+   0x0000000000401029 <+29>:    cmp    $0x2,%eax #长度只能为2
+   0x000000000040102c <+32>:    jne    0x401035 <phase_4+41>
+   0x000000000040102e <+34>:    cmpl   $0xe,0x8(%rsp)  # 
+   0x0000000000401033 <+39>:    jbe    0x40103a <phase_4+46>  ##第一个数要小于或等于14
+   0x0000000000401035 <+41>:    callq  0x40143a <explode_bomb>
+   0x000000000040103a <+46>:    mov    $0xe,%edx  #  %edx = 14 fun4的第三个参数？
+   0x000000000040103f <+51>:    mov    $0x0,%esi  #  %esi = 0  fun4的第二个参数
+   0x0000000000401044 <+56>:    mov    0x8(%rsp),%edi  # %edi = 第一个数 ，fun4的第一个参数
+   0x0000000000401048 <+60>:    callq  0x400fce <func4>
+   0x000000000040104d <+65>:    test   %eax,%eax #返回值为0
+   0x000000000040104f <+67>:    jne    0x401058 <phase_4+76>
+   0x0000000000401051 <+69>:    cmpl   $0x0,0xc(%rsp)  #第二个数得是0
+   0x0000000000401056 <+74>:    je     0x40105d <phase_4+81>
+   0x0000000000401058 <+76>:    callq  0x40143a <explode_bomb>
+   0x000000000040105d <+81>:    add    $0x18,%rsp
+   0x0000000000401061 <+85>:    retq
+End of assembler dump.
+(gdb) disas func4
+Dump of assembler code for function func4:
+   0x0000000000400fce <+0>:     sub    $0x8,%rsp  
+   # %edi = a;   %esi = b = 0; %edx = c = 14
+   0x0000000000400fd2 <+4>:     mov    %edx,%eax  # eax = c
+   0x0000000000400fd4 <+6>:     sub    %esi,%eax  # eax = c - b
+   0x0000000000400fd6 <+8>:     mov    %eax,%ecx  # ecx = c - b
+   0x0000000000400fd8 <+10>:    shr    $0x1f,%ecx # ecx = (c - b) >> 31
+   0x0000000000400fdb <+13>:    add    %ecx,%eax  # eax = (c - b)>>31 + (c - b)
+   0x0000000000400fdd <+15>:    sar    %eax       # eax = ((c - b)>>31 + (c - b)) >> 1
+   0x0000000000400fdf <+17>:    lea    (%rax,%rsi,1),%ecx  
+   #ecx = ((c - b)>>31 + (c - b)) >> 1 + b
+   0x0000000000400fe2 <+20>:    cmp    %edi,%ecx  # 比较ecx 和 edi(a)
+   0x0000000000400fe4 <+22>:    jle    0x400ff2 <func4+36>  #如果ecx大于edi就去0x400ff2
+   0x0000000000400fe6 <+24>:    lea    -0x1(%rcx),%edx #大于的话 edx = rcx - 1
+   0x0000000000400fe9 <+27>:    callq  0x400fce <func4> 重新计入该函数
+   0x0000000000400fee <+32>:    add    %eax,%eax  返回值*2
+   0x0000000000400ff0 <+34>:    jmp    0x401007 <func4+57> # 跳到+57
+   0x0000000000400ff2 <+36>:    mov    $0x0,%eax  #eax = 0 
+   0x0000000000400ff7 <+41>:    cmp    %edi,%ecx  #比较a和ecx
+   0x0000000000400ff9 <+43>:    jge    0x401007 <func4+57> #JGE大于等于
+   0x0000000000400ffb <+45>:    lea    0x1(%rcx),%esi # 小于+1
+   0x0000000000400ffe <+48>:    callq  0x400fce <func4> #再次进入
+   0x0000000000401003 <+53>:    lea    0x1(%rax,%rax,1),%eax #返回值*2 +1
+   0x0000000000401007 <+57>:    add    $0x8,%rsp #返回
+   0x000000000040100b <+61>:    retq
+End of assembler dump.
+```
+
+聚焦到```   0x000000000040101a <+14>:    mov    $0x4025cf,%esi```，输入```(gdb) x/s 0x4025cf```
+
+得到```0x4025cf:       "%d %d"```，所以这题也是两个整数。且由+29知道，只能是两个整数
+
+```0x000000000040102e <+34>:    cmpl   $0xe,0x8(%rsp)   ```第一个数要小于等于14
+
+```   0x0000000000401051 <+69>:    cmpl   $0x0,0xc(%rsp)  ``` 得到第二数得为0
+
+这题其实不太会，看了博客发现这是一个递归函数，所以自己还原了一下C代码
+
+```c
+int func4(int a, int b, int c) {
+    int temp = ((((c - b) >> 31) + (c - b)) >> 1) + b;
+    if (temp <= a) {
+        if (temp == a) {
+            return 0;
+        } else {
+            return 2 * func4(a, temp + 1, c) + 1;
+        }
+    } else {
+        return 2 * func4(a, b, temp - 1);
+    }
+}
+
+int main() {
+    int a;
+    int b = 0;
+    int c = 14;
+    for (a = 1; a <= 14; ++a) {
+        int res = func4(a, b, c);
+        if (res == 0) {
+            cout << a << " " << b << " " << c << endl;
+        }
+    }
+}
+//1 0 14
+//3 0 14
+//7 0 14
+```
+
+所以答案为 
+
+```
+1 0
+3 0
+7 0
+```
+
 
 
 ### 小记
