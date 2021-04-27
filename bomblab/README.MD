@@ -17,13 +17,116 @@ something useful
 
 ![image-20210421210423246](https://gitee.com/20162180090/piccgo/raw/master/image-20210421210423246.png)
 
-其中esi为$0x402400地址所指向的值，而rdi为phase_1的参数，即我们输入的值。其中rdi和esi(rsi)分别对应第一，第二个参数，将这两个参数传输strings_not_equal中，返回结果 %eax(test指令为 a&a )如果结果为1，则爆炸，为0则跳到phase_2阶段。
+其中esi为```$0x402400```地址所指向的值，而rdi为phase_1的参数，即我们输入的值。其中rdi和esi(rsi)分别对应第一，第二个参数，将这两个参数传输strings_not_equal中，返回结果 ```%eax```(test指令为 a&a )如果结果为1，则爆炸，为0则跳到phase_2阶段。
 
-所以输入 ``` x/s 0x402400```可以得到地址0x402400所对应的内容。```"Border relations with Canada have never been better."```
+所以输入 ``` x/s 0x402400```可以得到地址```0x402400```所对应的内容。```"Border relations with Canada have never been better."```
 
 ### phase 2
 
-### 小计
+首先反汇编两个主要函数，```phase_2```和```read_six_numbers```
+
+```assembly
+(gdb) disas read_six_numbers
+Dump of assembler code for function read_six_numbers:
+   0x000000000040145c <+0>:     sub    $0x18,%rsp
+   0x0000000000401460 <+4>:     mov    %rsi,%rdx
+   0x0000000000401463 <+7>:     lea    0x4(%rsi),%rcx
+   0x0000000000401467 <+11>:    lea    0x14(%rsi),%rax
+   0x000000000040146b <+15>:    mov    %rax,0x8(%rsp)
+   0x0000000000401470 <+20>:    lea    0x10(%rsi),%rax
+   0x0000000000401474 <+24>:    mov    %rax,(%rsp)
+   0x0000000000401478 <+28>:    lea    0xc(%rsi),%r9
+   0x000000000040147c <+32>:    lea    0x8(%rsi),%r8
+   0x0000000000401480 <+36>:    mov    $0x4025c3,%esi
+   0x0000000000401485 <+41>:    mov    $0x0,%eax
+   0x000000000040148a <+46>:    callq  0x400bf0 <__isoc99_sscanf@plt>
+   0x000000000040148f <+51>:    cmp    $0x5,%eax
+   0x0000000000401492 <+54>:    jg     0x401499 <read_six_numbers+61>
+   0x0000000000401494 <+56>:    callq  0x40143a <explode_bomb>
+   0x0000000000401499 <+61>:    add    $0x18,%rsp
+   0x000000000040149d <+65>:    retq
+End of assembler dump.
+(gdb) disas phase_2
+Dump of assembler code for function phase_2:
+   0x0000000000400efc <+0>:     push   %rbp
+   0x0000000000400efd <+1>:     push   %rbx
+   0x0000000000400efe <+2>:     sub    $0x28,%rsp
+=> 0x0000000000400f02 <+6>:     mov    %rsp,%rsi
+   0x0000000000400f05 <+9>:     callq  0x40145c <read_six_numbers>
+   0x0000000000400f0a <+14>:    cmpl   $0x1,(%rsp)
+   0x0000000000400f0e <+18>:    je     0x400f30 <phase_2+52>
+   0x0000000000400f10 <+20>:    callq  0x40143a <explode_bomb>
+   0x0000000000400f15 <+25>:    jmp    0x400f30 <phase_2+52>
+   0x0000000000400f17 <+27>:    mov    -0x4(%rbx),%eax
+   0x0000000000400f1a <+30>:    add    %eax,%eax
+   0x0000000000400f1c <+32>:    cmp    %eax,(%rbx)
+   0x0000000000400f1e <+34>:    je     0x400f25 <phase_2+41>
+   0x0000000000400f20 <+36>:    callq  0x40143a <explode_bomb>
+   0x0000000000400f25 <+41>:    add    $0x4,%rbx
+   0x0000000000400f29 <+45>:    cmp    %rbp,%rbx
+   0x0000000000400f2c <+48>:    jne    0x400f17 <phase_2+27>
+   0x0000000000400f2e <+50>:    jmp    0x400f3c <phase_2+64>
+   0x0000000000400f30 <+52>:    lea    0x4(%rsp),%rbx
+   0x0000000000400f35 <+57>:    lea    0x18(%rsp),%rbp
+   0x0000000000400f3a <+62>:    jmp    0x400f17 <phase_2+27>
+   0x0000000000400f3c <+64>:    add    $0x28,%rsp
+   0x0000000000400f40 <+68>:    pop    %rbx
+   0x0000000000400f41 <+69>:    pop    %rbp
+   0x0000000000400f42 <+70>:    retq
+End of assembler dump.
+```
+
+猜测```read_six_numbers```是一个读取六个数字的函数，其中
+
+```assembly
+   0x0000000000401460 <+4>:     mov    %rsi,%rdx
+   0x0000000000401463 <+7>:     lea    0x4(%rsi),%rcx
+   0x0000000000401467 <+11>:    lea    0x14(%rsi),%rax
+   0x000000000040146b <+15>:    mov    %rax,0x8(%rsp)
+   0x0000000000401470 <+20>:    lea    0x10(%rsi),%rax
+   0x0000000000401474 <+24>:    mov    %rax,(%rsp)
+   0x0000000000401478 <+28>:    lea    0xc(%rsi),%r9
+   0x000000000040147c <+32>:    lea    0x8(%rsi),%r8
+```
+
+由书本可知，第一个参数为%rsi,一个整形占4个字节，由这几条语句可得，六个数字分别被赋值到 ``` %rdx,%rcx,%r8,%r9,%rsp,0x8(%rsp)```
+
+通过
+
+```assembly
+(gdb) x/s 0x4025c3
+0x4025c3:       "%d %d %d %d %d %d"
+```
+
+可知```__isoc99_sscanf@plt```就是读取六个整形用的。
+
+```0x000000000040148f <+51>:    cmp    $0x5,%eax``` 返回scanf的长度，为5 （0开始的），长度为5则返回true(1）
+
+接下来看
+
+```assembly
+   0x0000000000400f15 <+25>:    jmp    0x400f30 <phase_2+52>
+   0x0000000000400f17 <+27>:    mov    -0x4(%rbx),%eax
+   0x0000000000400f1a <+30>:    add    %eax,%eax
+   0x0000000000400f1c <+32>:    cmp    %eax,(%rbx)
+   0x0000000000400f1e <+34>:    je     0x400f25 <phase_2+41>
+   0x0000000000400f20 <+36>:    callq  0x40143a <explode_bomb>
+   0x0000000000400f25 <+41>:    add    $0x4,%rbx
+   0x0000000000400f29 <+45>:    cmp    %rbp,%rbx
+   0x0000000000400f2c <+48>:    jne    0x400f17 <phase_2+27>
+   0x0000000000400f2e <+50>:    jmp    0x400f3c <phase_2+64>
+   0x0000000000400f30 <+52>:    lea    0x4(%rsp),%rbx
+   0x0000000000400f35 <+57>:    lea    0x18(%rsp),%rbp
+   0x0000000000400f3a <+62>:    jmp    0x400f17 <phase_2+27>
+   0x0000000000400f3c <+64>:    add    $0x28,%rsp
+   0x0000000000400f40 <+68>:    pop    %rbx
+   0x0000000000400f41 <+69>:    pop    %rbp
+   0x0000000000400f42 <+70>:    retq
+```
+
+
+
+### 小记
 
 ![image-20210421230209743](https://gitee.com/20162180090/piccgo/raw/master/image-20210421230209743.png)
 
