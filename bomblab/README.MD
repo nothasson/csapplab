@@ -416,7 +416,7 @@ Dump of assembler code for function phase_6:
    0x0000000000401158 <+100>:   mov    %r14,%rax # rax = 第一个元素
    0x000000000040115b <+103>:   mov    $0x7,%ecx # exc = 7
    0x0000000000401160 <+108>:   mov    %ecx,%edx # dex = 7
-   0x0000000000401162 <+110>:   sub    (%rax),%edx # edx = 
+   0x0000000000401162 <+110>:   sub    (%rax),%edx # edx = b 
    0x0000000000401164 <+112>:   mov    %edx,(%rax)
    0x0000000000401166 <+114>:   add    $0x4,%rax
    0x000000000040116a <+118>:   cmp    %rsi,%rax
